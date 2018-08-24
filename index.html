@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/weather/css/weather-icons.min.css">
+    <title>Vremea in Ploiesti</title>
+</head>
+<body>
+    <div class="container mx-auto text-center h-screen flex flex-col justify-center items-center content-center" id="app">
+        <div class="w-1/2 bg-orange text-white rounded px-16 py-4">
+            <p>
+                <i :class='[icon, "wi"]' style="font-size: 100px;"></i>
+            </p>
+            <p class="mt-4 text-5xl text-bold">
+                {{ grade }}℃
+            </p>
+            <p>
+                Vremea curenta in {{ oras }}
+            </p>
+        </div>
+        <div class="mt-6">
+            <input name='oras' v-model="oras" @input="getWeather" class='bg-red text-white'></input>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/lodash@4.17.10/lodash.min.js"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script>
+        // 0293f382b158c84b173e2777d7c2dc4d
+        var app = new Vue({
+            el: '#app',
+            data: {
+              grade: 0,
+              conditie: null,
+              oras: 'Ploiesti'
+            },
+            methods: {
+                getWeather: _.debounce(() => {
+                    let v = app;
+                    axios.get('https://api.openweathermap.org/data/2.5/weather?q='+v.oras+',RO&APPID=0293f382b158c84b173e2777d7c2dc4d&units=metric')
+                    .then(function(response) {
+                        var data = response.data;
+                        v.grade = Math.ceil(parseFloat(data.main.temp));
+                        v.conditie = data.weather[0].main.toLowerCase();
+                    })
+                }, 1000),
+            },
+            computed: {
+                icon: function() {
+                    switch(this.conditie) {
+                        default:
+                        case 'clear':
+                            return 'wi-day-sunny';
+                            break;
+                        case 'rain':
+                            return 'wi-day-rain';
+                            break;
+                        case 'thunderstorm':
+                            return 'wi-day-thunderstorm';
+                            break;
+                    }
+                }
+            },
+            mounted: function() {
+                this.getWeather(true)
+                setInterval(() => {
+                     //this.getWeather();
+                }, 10000)
+            }
+          })
+    </script>
+</body>
+</html>
